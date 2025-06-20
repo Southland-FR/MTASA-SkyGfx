@@ -6,7 +6,21 @@ local shaderColorFilterPS
 local shaderPs2ColorBlend
 local renderTarget
 
-local PS_MODULATE_SCALE = 0.6
+-- Strength of the post processing colours
+local PS_MODULATE_SCALE = 0.5
+
+-- Amount of warmth added during the day
+local WARM_DAYTIME_FACTORS = { r = 1.1, g = 0.95, b = 0.9 }
+
+local function applyWarmTint(r, g, b)
+    local hour = getTime()
+    if hour >= 9 and hour <= 17 then
+        r = r * WARM_DAYTIME_FACTORS.r
+        g = g * WARM_DAYTIME_FACTORS.g
+        b = b * WARM_DAYTIME_FACTORS.b
+    end
+    return r, g, b
+end
 
 local function init()
     screenSource = dxCreateScreenSource(screenW, screenH)
@@ -28,6 +42,9 @@ function renderColorFilter()
 
     r1, g1, b1, a1 = math.min(r1,255), math.min(g1,255), math.min(b1,255), math.min(a1,255)
     r2, g2, b2, a2 = math.min(r2,255), math.min(g2,255), math.min(b2,255), math.min(a2,255)
+
+    r1, g1, b1 = applyWarmTint(r1, g1, b1)
+    r2, g2, b2 = applyWarmTint(r2, g2, b2)
 
     r1, g1, b1, a1 = r1*PS_MODULATE_SCALE, g1*PS_MODULATE_SCALE, b1*PS_MODULATE_SCALE, a1*PS_MODULATE_SCALE
     r2, g2, b2, a2 = r2*PS_MODULATE_SCALE, g2*PS_MODULATE_SCALE, b2*PS_MODULATE_SCALE, a2*PS_MODULATE_SCALE
